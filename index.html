@@ -862,6 +862,9 @@ async function saveCt(sigla){
 }
 
 async function loadAll(){
+  // Aguarda SDK Supabase estar disponível (carregado no head)
+  if(window._supaClient) _supa = window._supaClient;
+  console.log('Modo:', modo(), '| _supa:', !!_supa, '| _supaClient:', !!window._supaClient);
   // Se arquivo tem dados embutidos (vindo do chat), usa e persiste no IndexedDB
   if(typeof EMBEDDED_DATA !== 'undefined' && EMBEDDED_DATA !== null){
     const d = EMBEDDED_DATA;
