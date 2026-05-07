@@ -3,6 +3,24 @@
 <meta charset="UTF-8">
   <!-- Supabase SDK v3 (aceita chave sb_publishable) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script>
+    // Inicializa cliente Supabase logo após o SDK carregar
+    window._supaClient = null;
+    (function initSupa(){
+      const SUPA_URL_INIT = 'https://bthcwmzjxswdhlojyuqc.supabase.co';
+      const SUPA_KEY_INIT = 'sb_publishable_alT9GAsym4Y0Hluqs2gLLg_u30vz464';
+      try {
+        const {createClient} = window.supabase;
+        window._supaClient = createClient(SUPA_URL_INIT, SUPA_KEY_INIT, {
+          global: { headers: { 'apikey': SUPA_KEY_INIT, 'Authorization': 'Bearer ' + SUPA_KEY_INIT } },
+          auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+        });
+        console.log('Supabase SDK inicializado:', window._supaClient ? 'OK' : 'FALHOU');
+      } catch(e){
+        console.error('Erro ao inicializar Supabase:', e);
+      }
+    })();
+  </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Observatório da Mulher · SMDF</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -455,19 +473,22 @@ const SUPA_KEY = 'sb_publishable_alT9GAsym4Y0Hluqs2gLLg_u30vz464';
 let _supa = null;
 function getSupa(){
   if(_supa) return _supa;
-  if(SUPA_URL === 'COLE_AQUI_A_URL_DO_SUPABASE'){
-    return null; // modo offline — usa IndexedDB
+  // Usa cliente pré-inicializado no head (após SDK carregar)
+  if(window._supaClient){
+    _supa = window._supaClient;
+    return _supa;
   }
+  // Fallback: tenta criar agora
+  if(SUPA_URL === 'COLE_AQUI_A_URL_DO_SUPABASE') return null;
   try {
     const u = window._supaUrlRuntime || SUPA_URL;
     const k = window._supaKeyRuntime || SUPA_KEY;
-    _supa = window.supabase.createClient(u, k, {
-      global: {
-        headers: { 'apikey': k, 'Authorization': 'Bearer ' + k }
-      },
+    const {createClient} = window.supabase;
+    _supa = createClient(u, k, {
+      global: { headers: { 'apikey': k, 'Authorization': 'Bearer ' + k } },
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
     });
-  } catch(e){ _supa = null; }
+  } catch(e){ console.error('getSupa erro:', e); _supa = null; }
   return _supa;
 }
 
